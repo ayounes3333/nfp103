@@ -5,6 +5,9 @@
  */
 package radar.saca;
 
+import com.sun.org.apache.xerces.internal.util.DraconianErrorHandler;
+import geometrie.Droite;
+import geometrie.Point;
 import java.util.Date;
 import java.util.Random;
 
@@ -21,6 +24,7 @@ public class Avion {
     public static final int LONG_ZONE = 50000; //en Kilo mettres
     public static final int LARG_ZONE = 50000; //en Kilo mettres
     public static final int TEMP_MIN_COLLISION = 10; //en minutes
+    public static final int MIN_SAFE_ALT_DIFF = 25; //en mettres
     
     private String nom;
     private String avion;
@@ -159,20 +163,21 @@ public class Avion {
     }
 
     // recalcule la localisation de l'avion en fonction de sa vitesse et de son cap
-    public void calcul_position_apres_temp_minimal() {
+    public Point calcul_position_apres_temp_minimal() {
         double cosinus, sinus;
         double dep_x, dep_y;
-        int nb;
 
         if (this.vitesse < VIT_MIN) {
             //printf("Vitesse trop faible : crash de l'avion\n");
             //fermer_communication();
             //exit(2);
+            return null;
         }
         if (this.altitude == 0) {
             //printf("L'avion s'est ecrase au sol\n");
             //fermer_communication();
             //exit(3);
+            return null;
         }
         //cos et sin ont un paramétre en radian, this.cap en degré nos habitudes francophone
         /*  Angle en radian = pi * (angle en degré) / 180 
@@ -181,9 +186,9 @@ public class Avion {
         cosinus = Math.cos(this.cap * 2 * Math.PI / 360);
         sinus = Math.sin(this.cap * 2 * Math.PI / 360);
 
-        //newPOS = oldPOS + Vt
-        dep_x = cosinus * this.vitesse * 10 / VIT_MIN;
-        dep_y = sinus * this.vitesse * 10 / VIT_MIN;
+        //Pythagore
+        dep_x = cosinus / (this.vitesse * TEMP_MIN_COLLISION * 60 / 1.852);
+        dep_y = sinus / (this.vitesse * TEMP_MIN_COLLISION * 60 / 1.852);
 
         // on se deplace d'au moins une case quels que soient le cap et la vitesse
         // sauf si cap est un des angles droit
@@ -200,9 +205,39 @@ public class Avion {
         if ((dep_y < 0) && (dep_y > -1)) {
             dep_y = -1;
         }
-
-        //printf(" x : %f y : %f\n", dep_x, dep_y);
-        this.x = this.x + (int) dep_x;
-        this.y = this.y + (int) dep_y;
+        
+        return new Point(this.x + (int) dep_x , this.y + (int) dep_y);
+    }
+    public boolean siCollision(Avion avion) {
+        if(this.altitude - avion.getAltitude() <= MIN_SAFE_ALT_DIFF) {
+            Point A = new Point(this.getX() , this.getY());
+            Point B = new Point(avion.getX() , avion.getY());
+            Point An = this.calcul_position_apres_temp_minimal();
+            Point Bn = avion.calcul_position_apres_temp_minimal();
+            Droite d1 = new Droite(A , An);
+            Droite d2 = new Droite(B ,Bn);
+            if(d1.siIntersect(d2)) {
+                Point intersection = d1.intersection(d2);
+                if(intersection.getX() > A.getX() && intersection.getX() < An.getX()) 
+                    return true;
+            }
+        }
+        return false;
+    }
+    public int tempsAvansCollision(Avion avion) {
+        if(this.siCollision(avion)) {
+            Point A = new Point(this.getX() , this.getY());
+            Point B = new Point(avion.getX() , avion.getY());
+            Point An = this.calcul_position_apres_temp_minimal();
+            Point Bn = avion.calcul_position_apres_temp_minimal();
+            Droite d1 = new Droite(A , An);
+            Droite d2 = new Droite(B ,Bn);
+            if(d1.siIntersect(d2)) {
+                Point intersection = d1.intersection(d2);
+                if(intersection.getX() > A.getX() && intersection.getX() < An.getX()) {
+                    return (int) ((A.distance(intersection) / 1.852) / this.vitesse) * 60;
+                }
+            }
+        } return -1;
     }
 }

@@ -35,7 +35,7 @@ public class Point {
         this.y = y;
     }
     
-    private int distance(Point p) {
+    public int distance(Point p) {
         return (int) Math.sqrt(Math.pow(p.x - this.x, 2) + Math.pow(p.y - this.y, 2));
     }
 }
