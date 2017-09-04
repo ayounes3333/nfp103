@@ -35,39 +35,39 @@ public class Console {
         public static final String ANSI_CYAN_BACKGROUND = "\u001B[46m";
         public static final String ANSI_WHITE_BACKGROUND = "\u001B[47m";
     }
-    public static void Init(JTextArea textArea) {
+    public synchronized static void Init(JTextArea textArea) {
         PrintStream con = new PrintStream(new TextAreaOutputStream(textArea));
         System.setOut(con);
         System.setErr(con);
     }
-    public static void write(String s) {
+    public synchronized static void write(String s) {
         System.out.print(s);
     }
-    public static void writeError(String s) {
+    public synchronized static void writeError(String s) {
         System.err.print(Colors.ANSI_RED + s + Colors.ANSI_RESET);
     }
-    public static void writeWarning(String s) {
+    public synchronized static void writeWarning(String s) {
         System.out.print(Colors.ANSI_YELLOW + s + Colors.ANSI_RESET);
     }
-    public static void writeInfo(String s) {
+    public synchronized static void writeInfo(String s) {
         System.out.print(Colors.ANSI_BLUE + s + Colors.ANSI_RESET);
     }
-    public static void writeFatal(String s) {
+    public synchronized static void writeFatal(String s) {
         System.out.print(Colors.ANSI_RED_BACKGROUND + Colors.ANSI_WHITE + s + Colors.ANSI_RESET);
     }
-    public static void writeLine(String s) {
+    public synchronized static void writeLine(String s) {
         System.out.println(s);
     }
-    public static void writeErrorLine(String s) {
+    public synchronized static void writeErrorLine(String s) {
         System.err.println(Colors.ANSI_RED + s + Colors.ANSI_RESET);
     }
-    public static void writeWarningLine(String s) {
+    public synchronized static void writeWarningLine(String s) {
         System.out.println(Colors.ANSI_YELLOW + s + Colors.ANSI_RESET);
     }
-    public static void writeInfoLine(String s) {
+    public synchronized static void writeInfoLine(String s) {
         System.out.println(Colors.ANSI_BLUE + s + Colors.ANSI_RESET);
     }
-    public static void writeFatalLine(String s) {
+    public synchronized static void writeFatalLine(String s) {
         System.out.println(Colors.ANSI_RED_BACKGROUND + Colors.ANSI_WHITE + s + Colors.ANSI_RESET);
     }
 }
